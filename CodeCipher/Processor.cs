@@ -25,7 +25,7 @@ namespace CodeCipher
         /// First value is the word that we need to translate
         /// Second is the list of all words that could be it
         /// </summary>
-        Dictionary<String, List<String>> possibleValuesDict
+        Dictionary<String, List<String>> possibleValuesDict;
 
         // Reference to the dictSorter
         DictionarySorter dictSorter;
@@ -45,6 +45,7 @@ namespace CodeCipher
             assignWordKeys();
             // Find all the matches and populate possibleMatchDictionary
             buildPossibleWordDict();
+            buildPossibleValueDict();
         }
 
         // Calculate the words into their keys and put it into the inputKeyDictionary
@@ -87,7 +88,54 @@ namespace CodeCipher
                     }
                 }
             }
-        
+        }
+
+        private void buildPossibleValueDict()
+        {
+            // Word to be translated
+            // And a list of possible chars for each position
+            // [position][possible chars]
+            Dictionary<String, List<List<Char>>> possibleChars = new Dictionary<string,List<List<char>>>();
+            Dictionary<Char, List<Char>> candidateList = new Dictionary<char, List<char>>();
+
+            foreach (String key in possibleValuesDict.Keys)
+            {
+                List<List<Char>> tempList = new List<List<char>>();
+                
+                Char[] tempChArr = key.ToCharArray();
+
+                // Find all possible chars for first letter, then next, then next
+                // i corresponds to the position
+                for (int i = 0; i < key.Length; i++)
+                {
+                    List<Char> tempCharList = new List<char>();
+
+                    foreach (String value in possibleValuesDict[key])
+                    {
+                        tempCharList.Add(value.ElementAt(i));
+                        if (!candidateList.ContainsKey(value.ElementAt(i)))
+                            candidateList.Add(value.ElementAt(i), null);
+                    }
+                    // Remove dem dupes
+                    List<Char> tempList2 = new List<char>(tempCharList.Distinct().ToList());
+                    
+                    tempList.Add(tempList2);
+
+                    // Some crazy one liners, jebus
+                    if (candidateList.ElementAt(i).Value != null)
+                        candidateList.ElementAt(i).Value.Concat(tempList2);
+                    else 
+                        foreach (char thing in tempList2)
+                        {
+                            candidateList[candidateList.ElementAt(i)].Add(thing);
+                        }
+                }
+
+                possibleChars.Add(key, tempList);
+            }
+
+            
+
         }
     }
 }
