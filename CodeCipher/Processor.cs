@@ -16,9 +16,16 @@ namespace CodeCipher
         SortedDictionary<Char, List<Char>> possibleLetterDict;
 
         // Contains the keys for every [value] in inputCipher
+        /// <summary>
+        /// (Calculated KEY)(Value from INPUT)
+        /// </summary>
         SortedDictionary<String, List<String>> inputKeyDictionary;
         // Matches the key to possible values in the dictionary
-        SortedDictionary<String, List<String>> possibleMatchDictionary;
+        /// <summary>
+        /// First value is the word that we need to translate
+        /// Second is the list of all words that could be it
+        /// </summary>
+        Dictionary<String, List<String>> possibleValuesDict
 
         // Reference to the dictSorter
         DictionarySorter dictSorter;
@@ -37,13 +44,13 @@ namespace CodeCipher
             // get the patterns and put them into the inputKeyDictionary
             assignWordKeys();
             // Find all the matches and populate possibleMatchDictionary
-            buildComparisonList();
+            buildPossibleWordDict();
         }
 
         // Calculate the words into their keys and put it into the inputKeyDictionary
         private void assignWordKeys()
         {
-            
+
             foreach (String stringThing in inputCipher)
             {
                 // Get the key from the getWord method
@@ -62,31 +69,25 @@ namespace CodeCipher
             }
         }
 
-        private void buildComparisonList()
+        private void buildPossibleWordDict()
         {
-            List<String> inputKeys = new List<string>();
-            List<String> keyList;
-            possibleMatchDictionary = new SortedDictionary<string, List<string>>();
-
-            foreach (String thing in inputKeyDictionary.Keys)
-                inputKeys.Add(thing);
-
-            // Keep track of where we are, shame on me for not using a for loop
-            int i = 0;
+            List<String> wordList;
+            possibleValuesDict = new Dictionary<string, List<string>>();
+            // For each key inside the dictionary
             foreach (String thing in inputKeyDictionary.Keys)
             {
-                if (dictSorter.getMasterDictionary().ContainsKey(thing))
+                // Get each value from it
+                foreach (String thing1 in inputKeyDictionary[thing])
                 {
-                    keyList = dictSorter.getMasterDictionary()[thing];
-                    if (!possibleMatchDictionary.ContainsKey(inputCipher[i]))
-                        possibleMatchDictionary.Add(inputCipher[i], keyList);
-                    Console.WriteLine(inputCipher[i]);
-                    Console.WriteLine(keyList[1]);
+                    if (dictSorter.getMasterDictionary().ContainsKey(thing))
+                    {
+                        wordList = dictSorter.getMasterDictionary()[thing];
+                        if (!possibleValuesDict.ContainsKey(thing1))
+                            possibleValuesDict.Add(thing1, wordList);
+                    }
                 }
-                i++;
-
-                // australopithecus is a direct match for embyitpwbgjvlmpv
             }
+        
         }
     }
 }
