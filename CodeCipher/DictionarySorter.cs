@@ -51,10 +51,9 @@ namespace CodeCipher
                 sortByLength();
 
                 // Generate the keys and populate the masterDictionary
-                Console.WriteLine("Generating Keys");
+                Console.WriteLine("Generating Keys...");
                 masterDictionary = assignWordPatterns(masterArray);
                 writeKeys();
-                Console.WriteLine("Done!");
             }
             else
                 Console.WriteLine("Couldnt find words.txt!! Is it in the same directory as the exe?");

@@ -8,9 +8,13 @@ namespace CodeCipher
 {
     class Processor
     {
-        // The input string seperated out into an array
+        /// <summary>
+        /// The input cipher, unmolested, seperated out into an array
+        /// </summary>
         String[] inputCipher;
-        // The final answer key, where one char is mapped to one other char
+        /// <summary>
+        /// Final answer key, mapping a single char to a single char
+        /// </summary>
         SortedDictionary<Char, Char> finalLetterDict;
         // The "runners up"
         SortedDictionary<Char, List<Char>> possibleLetterDict;
@@ -22,10 +26,20 @@ namespace CodeCipher
         SortedDictionary<String, List<String>> inputKeyDictionary;
         // Matches the key to possible values in the dictionary
         /// <summary>
-        /// First value is the word that we need to translate
-        /// Second is the list of all words that could be it
+        /// <para>First value is the word that we need to translate</para>
+        /// <para>Second is the list of all words that could be it</para>
         /// </summary>
         Dictionary<String, List<String>> possibleValuesDict;
+
+        /// <summary>
+        /// The Char, A-Z, and then a list of lists of possible values
+        /// <para>[a][list of possible values for that a]</para>
+        /// <para>[b][list of possible values for that b</para>
+        /// <para>[a][list of possible values for that seperate a</para>
+        /// <para>So I can use this to find the char with the least possibilites and then</para>
+        /// <para>use that to cross reference and widdle down the options</para>
+        /// </summary>
+        Dictionary<Char, List<List<Char>>> possibleCharValDict;
 
         // Reference to the dictSorter
         DictionarySorter dictSorter;
@@ -35,10 +49,20 @@ namespace CodeCipher
             // Get a reference to the dictSorter for comparing values
             this.dictSorter = dictSorter;
             inputKeyDictionary = new SortedDictionary<String, List<String>>();
+
+            // populate the final dict
+            finalLetterDict = new SortedDictionary<Char, Char>();
+            for (int i = 0; i < 26; i++)
+            {
+                Char value = (Char)(i + 97);
+
+                finalLetterDict.Add(value, '-');
+            }
         }
 
         public void processInput(String input)
         {
+            Console.WriteLine("Processing input...");
             // Split it out into the string array
             inputCipher = input.Split(' ');
             // get the patterns and put them into the inputKeyDictionary
@@ -46,6 +70,11 @@ namespace CodeCipher
             // Find all the matches and populate possibleMatchDictionary
             buildPossibleWordDict();
             buildPossibleValueDict();
+            compareValues();
+            compareValues();
+            compareValues();
+            foreach (KeyValuePair<Char, Char> value in finalLetterDict)
+                Console.WriteLine(value.Key + " " + value.Value);
         }
 
         // Calculate the words into their keys and put it into the inputKeyDictionary
@@ -92,50 +121,86 @@ namespace CodeCipher
 
         private void buildPossibleValueDict()
         {
-            // Word to be translated
-            // And a list of possible chars for each position
-            // [position][possible chars]
-            Dictionary<String, List<List<Char>>> possibleChars = new Dictionary<string,List<List<char>>>();
-            Dictionary<Char, List<Char>> candidateList = new Dictionary<char, List<char>>();
 
-            foreach (String key in possibleValuesDict.Keys)
+            possibleCharValDict = new Dictionary<Char, List<List<Char>>>();
+            
+            // Populate the encrypted char alphabet
+            for (int i = 0; i < 26; i++)
             {
-                List<List<Char>> tempList = new List<List<char>>();
-                
-                Char[] tempChArr = key.ToCharArray();
+                Char value = (Char)(i + 97);
 
-                // Find all possible chars for first letter, then next, then next
-                // i corresponds to the position
-                for (int i = 0; i < key.Length; i++)
+                possibleCharValDict.Add(value, new List<List<Char>>());
+            }
+            // Start going through the possible values dict
+            foreach (KeyValuePair<String, List<String>> dictItem in possibleValuesDict)
+            {
+                // Cycle through the string and get all the possible chars for the encrypted char for that string
+                for (int i = 0; i < dictItem.Key.Length; i++)
                 {
-                    List<Char> tempCharList = new List<char>();
+                    Char currentEncryptedChar = dictItem.Key[i];
+                    List<Char> listOfPosiblVals = new List<char>();
 
-                    foreach (String value in possibleValuesDict[key])
+                    foreach (String possibleString in dictItem.Value)
                     {
-                        tempCharList.Add(value.ElementAt(i));
-                        if (!candidateList.ContainsKey(value.ElementAt(i)))
-                            candidateList.Add(value.ElementAt(i), null);
+                        if (!listOfPosiblVals.Contains(possibleString[i]))
+                            listOfPosiblVals.Add(possibleString[i]);
                     }
-                    // Remove dem dupes
-                    List<Char> tempList2 = new List<char>(tempCharList.Distinct().ToList());
-                    
-                    tempList.Add(tempList2);
 
-                    // Some crazy one liners, jebus
-                    if (candidateList.ElementAt(i).Value != null)
-                        candidateList.ElementAt(i).Value.Concat(tempList2);
-                    else 
-                        foreach (char thing in tempList2)
-                        {
-                            candidateList[candidateList.ElementAt(i)].Add(thing);
-                        }
+                    possibleCharValDict[currentEncryptedChar].Add(listOfPosiblVals);
+                }
+            }
+        }
+
+        // Go through all the combinations and find the one with the least amount of possible options
+        // then compare
+        private void compareValues()
+        {
+
+            foreach (KeyValuePair<Char, List<List<Char>>> KVP in possibleCharValDict)
+            {
+                List<Char> lowestValueSet = new List<Char>();
+                bool empty = true;
+                foreach (List<Char> charList in KVP.Value)
+                {
+                    if (charList.Count < lowestValueSet.Count || empty == true)
+                    {
+                        empty = false;
+                        lowestValueSet = charList;
+                    }
                 }
 
-                possibleChars.Add(key, tempList);
+                // KVP.Value.Count is theamount of seperate list of possible chars for the letter
+                for (int i = 0; i < KVP.Value.Count; i++)
+                {
+                    
+                    // So I first get the amount of seperate lists, and now i go into a single list and count its values
+                    for (int x = KVP.Value[i].Count - 1; x > -1; x--)
+                    {
+                        if (!lowestValueSet.Contains(KVP.Value[i][x]))
+                        {
+                            KVP.Value[i].Remove(KVP.Value[i][x]);
+                        }
+                    }    
+    
+                    if (KVP.Value[i].Count == 1)
+                    {
+                        finalLetterDict[KVP.Key] = KVP.Value[i][0];
+                        cullCorrectValues(KVP.Value[i][0]);
+                    }
+                } 
             }
+        }
 
-            
+        private void cullCorrectValues(Char valueToCull)
+        {
 
+            foreach (KeyValuePair<Char, List<List<Char>>> KVP in possibleCharValDict)
+            {
+                foreach (List<Char> charList in KVP.Value)
+                {
+                    charList.RemoveAll(item => item == valueToCull);
+                }
+            }
         }
     }
 }
