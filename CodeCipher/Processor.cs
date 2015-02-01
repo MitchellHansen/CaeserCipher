@@ -69,12 +69,14 @@ namespace CodeCipher
             assignWordKeys();
             // Find all the matches and populate possibleMatchDictionary
             buildPossibleWordDict();
+
             buildPossibleValueDict();
-            compareValues();
-            compareValues();
+
             compareValues();
             foreach (KeyValuePair<Char, Char> value in finalLetterDict)
                 Console.WriteLine(value.Key + " " + value.Value);
+
+            findWordMatches();
         }
 
         // Calculate the words into their keys and put it into the inputKeyDictionary
@@ -201,6 +203,24 @@ namespace CodeCipher
                     charList.RemoveAll(item => item == valueToCull);
                 }
             }
+        }
+
+        private void findWordMatches()
+        {
+            List<List<Char>> partiallyTranslatedInputCipher = new List<List<Char>>();
+            //foreach (String thing in inputCipher)
+            //{
+            //    partiallyTranslatedInputCipher.Add(thing.ToCharArray().ToList());
+            //}
+
+            for (int i = 0; i < inputCipher.Length; i++)
+            {
+                for (int x = 0; x < inputCipher[i].Length; x++)
+                {
+                    partiallyTranslatedInputCipher.ElementAt(i)[x] = finalLetterDict[inputCipher[i][x]];
+                }
+            }
+
         }
     }
 }
