@@ -66,6 +66,8 @@ namespace CodeCipher
 
                 // And write them to file
                 writeKeys();
+
+                Console.WriteLine("Done!");
             }
             else
                 Console.WriteLine("Couldnt find words.txt!! Is it in the same directory as the exe?");

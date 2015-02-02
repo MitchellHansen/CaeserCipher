@@ -93,6 +93,8 @@ namespace CodeCipher
 
             foreach (KeyValuePair<Char, Char> value in finalAnswerKeyDict)
                 Console.WriteLine(value.Key + " " + value.Value);
+
+            Console.WriteLine(translateFinaloutput(inputCipher));
         }
 
         // Calculate the words into their keys and put it into the inputKeyDictionary
@@ -288,6 +290,25 @@ namespace CodeCipher
                 
             }
             
+        }
+
+        private String translateFinaloutput(String[] input)
+        {
+            String finalString = "";
+
+            foreach (String stringThing in input)
+            {
+                String temp = "";
+
+                for (int i = 0; i < stringThing.Length; i++)
+                {
+                    temp += finalAnswerKeyDict[stringThing[i]];
+                }
+
+                finalString += temp + " ";
+            }
+
+            return finalString;
         }
 
 

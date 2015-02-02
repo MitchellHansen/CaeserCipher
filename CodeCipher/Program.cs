@@ -26,9 +26,9 @@ namespace CodeCipher
             while (running)
             {
                 Console.WriteLine("1.) Initialize\n" +
-                                  "2.) Enter custom cipher\n" + 
-                                  "3.) Complete assigned cipher\n" +
-                                  "4.) Help\n5.) Quit");
+                                  "2.) Complete assigned cipher\n" +
+                                  "3.) Help\n" +
+                                  "4.) Quit");
 
                 String input = Console.ReadLine();
 
@@ -47,23 +47,13 @@ namespace CodeCipher
                             inputProcessor = new Processor(dictSorter);
                             initialized = true;
                         }
-                        Console.WriteLine("Please enter the cipher, spaces must be intact");
-                        inputCipher = Console.ReadLine();
-                        inputProcessor.processInput(inputCipher);
-                        break;
-                    case "3":
-                        if (initialized == false)
-                        {
-                            dictSorter = new DictionarySorter();
-                            inputProcessor = new Processor(dictSorter);
-                            initialized = true;
-                        }
                         inputProcessor.processInput(defaultCipher);
                         break;
-                    case "4":
-                        Console.WriteLine("Help");
+                    case "3":
+                        Console.WriteLine("Initialize to reconfigure the word list if you want to try different dictionaries\n" +
+                                          "Press 2 to decrypt the cipher, press 4 to end the program!");
                         break;
-                    case "5":
+                    case "4":
                         Console.WriteLine("Bye!");
                         running = false;
                         break;
