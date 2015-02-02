@@ -12,18 +12,24 @@ namespace CodeCipher
         static DictionarySorter dictSorter;
         static Processor inputProcessor;
 
+        static String defaultCipher = "ng ngnlicpc bo hum embyitpwbgjvlmpv nvpe objge pg hum mhuqbpe zbqmt nge fns wbgmc vbgoptqme hunh hum cdmlmhnl btpapgc smtm qbch lpdmli bo njchtnlbrphumvjc btpapg";
+        static char[] defaultCipherArr;
+
         static void Main(string[] args)
         {
-            // The main string, encripted with probably a ceaser cipher and a custom alphabet
-            String cipherInitStr = "ng ngnlicpc bo hum embyitpwbgjvlmpv nvpe objge pg hum mhuqbpe zbqmt nge fns wbgmc vbgoptqme hunh hum cdmlmhnl btpapgc smtm qbch lpdmli bo njchtnlbrphumvjc btpapg";
-            char[] cipherCharArr = cipherInitStr.ToCharArray();
+            // Populate the cipher array
+            defaultCipherArr = defaultCipher.ToCharArray();
 
             bool running = true;
             bool initialized = false;
 
             while (running)
             {
-                Console.WriteLine("1.) Initialize\n2.) Enter custom cipher\n3.) Complete assigned cipher\n4.) Help\n5.) Quit");
+                Console.WriteLine("1.) Initialize\n" +
+                                  "2.) Enter custom cipher\n" + 
+                                  "3.) Complete assigned cipher\n" +
+                                  "4.) Help\n5.) Quit");
+
                 String input = Console.ReadLine();
 
                 switch (input)
@@ -52,7 +58,7 @@ namespace CodeCipher
                             inputProcessor = new Processor(dictSorter);
                             initialized = true;
                         }
-                        inputProcessor.processInput(cipherInitStr);
+                        inputProcessor.processInput(defaultCipher);
                         break;
                     case "4":
                         Console.WriteLine("Help");
@@ -62,7 +68,7 @@ namespace CodeCipher
                         running = false;
                         break;
                     default:
-                        Console.WriteLine("I don't think you entered the right input");
+                        Console.WriteLine("I don't understand...");
                         break;
                 }
                 Console.WriteLine("\n");

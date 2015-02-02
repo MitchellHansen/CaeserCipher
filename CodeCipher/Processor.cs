@@ -1,22 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace CodeCipher
 {
+
     class Processor
     {
         /// <summary>
-        /// The input cipher, unmolested, seperated out into an array
+        /// The input cipher, unmolested, separated out into an array
         /// </summary>
         String[] inputCipher;
+
         /// <summary>
         /// Final answer key, mapping a single char to a single char
         /// </summary>
-        SortedDictionary<Char, Char> finalLetterDict;
-        // The "runners up"
+        SortedDictionary<Char, Char> finalAnswerKeyDict;
+
+        /// <summary>
+        /// Runners up to the final answer key
+        /// </summary>
         SortedDictionary<Char, List<Char>> possibleLetterDict;
 
         // Contains the keys for every [value] in inputCipher
@@ -35,8 +42,8 @@ namespace CodeCipher
         /// The Char, A-Z, and then a list of lists of possible values
         /// <para>[a][list of possible values for that a]</para>
         /// <para>[b][list of possible values for that b</para>
-        /// <para>[a][list of possible values for that seperate a</para>
-        /// <para>So I can use this to find the char with the least possibilites and then</para>
+        /// <para>[a][list of possible values for that separate a</para>
+        /// <para>So I can use this to find the char with the least possibilities and then</para>
         /// <para>use that to cross reference and widdle down the options</para>
         /// </summary>
         Dictionary<Char, List<List<Char>>> possibleCharValDict;
@@ -51,12 +58,12 @@ namespace CodeCipher
             inputKeyDictionary = new SortedDictionary<String, List<String>>();
 
             // populate the final dict
-            finalLetterDict = new SortedDictionary<Char, Char>();
+            finalAnswerKeyDict = new SortedDictionary<Char, Char>();
             for (int i = 0; i < 26; i++)
             {
                 Char value = (Char)(i + 97);
 
-                finalLetterDict.Add(value, '-');
+                finalAnswerKeyDict.Add(value, '-');
             }
         }
 
@@ -73,10 +80,19 @@ namespace CodeCipher
             buildPossibleValueDict();
 
             compareValues();
-            foreach (KeyValuePair<Char, Char> value in finalLetterDict)
-                Console.WriteLine(value.Key + " " + value.Value);
 
             findWordMatches();
+
+
+            for (int i = 0; i < 10; i++)
+            {
+                updateFinalAnswerForConfirmedWords();
+
+                findWordMatches();
+            }
+
+            foreach (KeyValuePair<Char, Char> value in finalAnswerKeyDict)
+                Console.WriteLine(value.Key + " " + value.Value);
         }
 
         // Calculate the words into their keys and put it into the inputKeyDictionary
@@ -86,7 +102,7 @@ namespace CodeCipher
             foreach (String stringThing in inputCipher)
             {
                 // Get the key from the getWord method
-                String temp = DictionarySorter.getWordPattern(stringThing);
+                String temp = dictSorter.getWordPattern(stringThing);
 
                 // If the key is already in the dict, add the value to the list
                 if (inputKeyDictionary.ContainsKey(temp))
@@ -103,7 +119,6 @@ namespace CodeCipher
 
         private void buildPossibleWordDict()
         {
-            List<String> wordList;
             possibleValuesDict = new Dictionary<string, List<string>>();
             // For each key inside the dictionary
             foreach (String thing in inputKeyDictionary.Keys)
@@ -113,7 +128,7 @@ namespace CodeCipher
                 {
                     if (dictSorter.getMasterDictionary().ContainsKey(thing))
                     {
-                        wordList = dictSorter.getMasterDictionary()[thing];
+                        List<String> wordList = new List<String>(dictSorter.getMasterDictionary()[thing]);
                         if (!possibleValuesDict.ContainsKey(thing1))
                             possibleValuesDict.Add(thing1, wordList);
                     }
@@ -186,7 +201,7 @@ namespace CodeCipher
     
                     if (KVP.Value[i].Count == 1)
                     {
-                        finalLetterDict[KVP.Key] = KVP.Value[i][0];
+                        finalAnswerKeyDict[KVP.Key] = KVP.Value[i][0];
                         cullCorrectValues(KVP.Value[i][0]);
                     }
                 } 
@@ -205,22 +220,76 @@ namespace CodeCipher
             }
         }
 
+
+        // Match the known letters with the values in the possible values dict
         private void findWordMatches()
         {
-            List<List<Char>> partiallyTranslatedInputCipher = new List<List<Char>>();
-            //foreach (String thing in inputCipher)
-            //{
-            //    partiallyTranslatedInputCipher.Add(thing.ToCharArray().ToList());
-            //}
+            // possibleValuesDict holds the encrypted words[Key] and all the possibilities for that word[Value]
+            // We need to go through each Key and it's values and try to start narrowing them down based on the letters we have decrypted
 
-            for (int i = 0; i < inputCipher.Length; i++)
+            for (int i = 0; i < possibleValuesDict.Count(); i++)
             {
-                for (int x = 0; x < inputCipher[i].Length; x++)
+
+                for (int x = 0; x < possibleValuesDict.ElementAt(i).Value.Count;)
                 {
-                    partiallyTranslatedInputCipher.ElementAt(i)[x] = finalLetterDict[inputCipher[i][x]];
+                    String keyDecrypt = compareAndReplace(possibleValuesDict.ElementAt(i).Key);
+                    String valueDecrypt = formatForCompareAndReplace(possibleValuesDict.ElementAt(i).Value[x]);
+                    if (!keyDecrypt.Equals(valueDecrypt))
+                        possibleValuesDict.ElementAt(i).Value.Remove(possibleValuesDict.ElementAt(i).Value[x]);
+                    else
+                        x++;
                 }
             }
 
         }
+
+        private String compareAndReplace(String encryptedString)
+        {
+            String output = "";
+
+            for (int i = 0; i < encryptedString.Length; i++)
+            {
+                output += finalAnswerKeyDict[encryptedString[i]];
+            }
+
+            return output;
+        }
+
+        private String formatForCompareAndReplace(String unencryptedString)
+        {
+            String output = "";
+
+            for (int i = 0; i < unencryptedString.Length; i++)
+            {
+                if (finalAnswerKeyDict.ContainsValue(unencryptedString[i]))
+                {
+                    output += unencryptedString[i];
+                }
+                else
+                    output += "-";
+            }
+
+            return output;
+        }
+
+        private void updateFinalAnswerForConfirmedWords()
+        {
+
+            foreach (KeyValuePair<String, List<String>> KVP in possibleValuesDict)
+            {
+
+                if (KVP.Value.Count == 1)
+                {
+                    for (int i = 0; i < KVP.Value[0].Length; i++)
+                    {
+                        finalAnswerKeyDict[KVP.Key[i]] = KVP.Value[0][i];
+                    }
+                }
+                
+            }
+            
+        }
+
+
     }
 }
