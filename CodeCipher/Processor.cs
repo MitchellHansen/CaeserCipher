@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace CodeCipher
 {
-
     class Processor
     {
         /// <summary>
@@ -21,16 +20,12 @@ namespace CodeCipher
         /// </summary>
         SortedDictionary<Char, Char> finalAnswerKeyDict;
 
-        /// <summary>
-        /// Runners up to the final answer key
-        /// </summary>
-        SortedDictionary<Char, List<Char>> possibleLetterDict;
-
         // Contains the keys for every [value] in inputCipher
         /// <summary>
         /// (Calculated KEY)(Value from INPUT)
         /// </summary>
         SortedDictionary<String, List<String>> inputKeyDictionary;
+
         // Matches the key to possible values in the dictionary
         /// <summary>
         /// <para>First value is the word that we need to translate</para>
@@ -76,23 +71,23 @@ namespace CodeCipher
             assignWordKeys();
             // Find all the matches and populate possibleMatchDictionary
             buildPossibleWordDict();
-
+            // Go through the possible word dict and find what each letters possible matches are
             buildPossibleValueDict();
-
+            // Go through that and compare each letter with its multiple sets of options
             compareValues();
-
+            // Go through the possible word dict with our possible values and try to find matches
             findWordMatches();
-
-
-            for (int i = 0; i < 10; i++)
+            // This can be recursive if it's for a hard cipher, should do it in one go most of the time though
+            for (int i = 0; i < 2; i++)
             {
+                // If we have confirmed words, see if it confirmed any letters
                 updateFinalAnswerForConfirmedWords();
-
+                // If more letters have been confirmed, try and find more matches
                 findWordMatches();
             }
 
             foreach (KeyValuePair<Char, Char> value in finalAnswerKeyDict)
-                Console.WriteLine(value.Key + " " + value.Value);
+                Console.WriteLine(value.Key + " = " + value.Value);
 
             Console.WriteLine(translateFinaloutput(inputCipher));
         }
@@ -234,6 +229,7 @@ namespace CodeCipher
 
                 for (int x = 0; x < possibleValuesDict.ElementAt(i).Value.Count;)
                 {
+                    // One liner hell, compares the decrypted value with possible matches using the possible values dict
                     String keyDecrypt = compareAndReplace(possibleValuesDict.ElementAt(i).Key);
                     String valueDecrypt = formatForCompareAndReplace(possibleValuesDict.ElementAt(i).Value[x]);
                     if (!keyDecrypt.Equals(valueDecrypt))

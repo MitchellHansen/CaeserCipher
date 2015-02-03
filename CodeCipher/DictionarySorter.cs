@@ -64,25 +64,11 @@ namespace CodeCipher
                 Console.WriteLine("Generating Keys...");
                 masterPatternDictionary = assignWordPatterns(masterArray);
 
-                // And write them to file
-                writeKeys();
-
                 Console.WriteLine("Done!");
             }
             else
                 Console.WriteLine("Couldnt find words.txt!! Is it in the same directory as the exe?");
                 
-        }
-
-        private void writeKeys()
-        {
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"output.txt", true))
-            {
-                foreach (KeyValuePair<String, List<String>> KVP in masterPatternDictionary)
-                {
-                    file.WriteLine(KVP.Key);
-                }
-            }
         }
         
         private void sortByLength()

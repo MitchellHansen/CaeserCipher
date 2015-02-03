@@ -8,7 +8,6 @@ namespace CodeCipher
 {
     class Program
     {
-        static String inputCipher;
         static DictionarySorter dictSorter;
         static Processor inputProcessor;
 
