@@ -19,7 +19,7 @@ namespace CodeCipher
         /// Final answer key, mapping a single char to a single char
         /// </summary>
         SortedDictionary<Char, Char> finalAnswerKeyDict;
-
+        
         // Contains the keys for every [value] in inputCipher
         /// <summary>
         /// (Calculated KEY)(Value from INPUT)
@@ -78,7 +78,7 @@ namespace CodeCipher
             // Go through the possible word dict with our possible values and try to find matches
             findWordMatches();
             // This can be recursive if it's for a hard cipher, should do it in one go most of the time though
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 4; i++)
             {
                 // If we have confirmed words, see if it confirmed any letters
                 updateFinalAnswerForConfirmedWords();
